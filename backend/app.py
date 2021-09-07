@@ -1,5 +1,7 @@
 from typing import Tuple
 
+import json
+
 from flask import Flask, jsonify, request, Response
 import mockdb.mockdb_interface as db
 
@@ -51,9 +53,29 @@ def mirror(name):
     data = {"name": name}
     return create_response(data)
 
+# Part 6
 @app.route("/shows", methods=['GET'])
 def get_all_shows():
-    return create_response({"shows": db.get('shows')})
+    minEpisodes = request.args.get('minEpisodes')
+    shows = db.get('shows')
+    # if minEpisodes is not provided as a query string parameter
+    # display all shows
+    if not minEpisodes:
+        return create_response({"shows": shows})
+
+    # convert str to int 
+    minEpisodes = int(minEpisodes)
+    filtered_shows = [show for show in shows if show["episodes_seen"] >= minEpisodes]
+
+    # if there are no shows matching the query parameter
+    if filtered_shows == []:
+        return create_response({"shows": f"There is no such show with at least {minEpisodes} episodes seen." })
+    return create_response({"shows": filtered_shows})
+
+# Part 1
+# @app.route("/shows", methods=['GET'])
+# def get_all_shows():
+#     return create_response({"shows": db.get('shows')})
 
 @app.route("/shows/<id>", methods=['DELETE'])
 def delete_show(id):
@@ -64,6 +86,50 @@ def delete_show(id):
 
 
 # TODO: Implement the rest of the API here!
+
+
+# Part 2 
+@app.route("/shows/<id>", methods=['GET'])
+def get_show(id):
+    show = db.getById('shows', int(id))
+    if show is None:
+        return create_response(status=404, message="No show with this id exists")
+    return create_response(show)
+    
+# Part 3
+@app.route("/shows", methods=['POST'])
+def create_show():
+    data = json.loads(request.get_data())
+    name = data.get('name')
+    episodes_seen = data.get('episodes_seen')
+    if(not name and not episodes_seen):
+        return create_response(status=422, message="Please enter the name of the show and the episodes seen")
+    if (not name ):
+        return create_response(status=422, message="Please enter the name of the show")
+    if (not episodes_seen): 
+        return create_response(status=422, message="Please enter the episodes seen")
+    payload = {"name": name, "episodes_seen": episodes_seen}
+    db.create('shows', payload)
+    return create_response(db.get('shows')[len(db.get('shows'))-1], status=201)
+
+# Part 4
+@app.route("/shows/<id>", methods=['PUT'])
+def update_show(id):
+    show = db.getById('shows', int(id))
+    if show is None:
+        return create_response(status=404, message="No show with this id exists")
+    data = json.loads(request.get_data())
+    name = data.get('name')
+    episodes_seen = data.get('episodes_seen')
+    update_values = dict()
+
+    if name:
+        update_values['name'] = name
+    if episodes_seen:
+        update_values['episodes_seen'] = int(episodes_seen)
+
+    return create_response(db.updateById('shows', int(id), update_values))
+
 
 """
 ~~~~~~~~~~~~ END API ~~~~~~~~~~~~
