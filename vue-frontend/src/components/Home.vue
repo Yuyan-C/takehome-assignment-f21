@@ -15,7 +15,7 @@
     <br>
 
     <input v-model="showname" type="text" placeholder="Enter a show ...">
-    <button type="button"  @click="add_show">Add a Show</button>
+    <button type="button" @click="add_show">Add a Show</button>
     
   </div>
 </template>
@@ -40,7 +40,7 @@ export default {
 
   computed: {
   	isDisabled: function(){
-    	return this.showname.length == 0;
+    	return this.showname.length <= 0;
     }
   },
   
