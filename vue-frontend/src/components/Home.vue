@@ -15,7 +15,7 @@
     <br>
 
     <input v-model="showname" type="text" placeholder="Enter a show ...">
-    <button type="button" @click="add_show">Add a Show</button>
+    <button type="button" :disabled="isDisabled"    @click="add_show">Add a Show</button>
     
   </div>
 </template>
@@ -34,7 +34,8 @@ export default {
         { id: 1, name: "Game of Thrones", episodes_seen: 0 },
         { id: 2, name: "Naruto", episodes_seen: 220 },
         { id: 3, name: "Black Mirror", episodes_seen: 3 }
-      ]
+      ],
+      showname: ""
     };
   },
 
